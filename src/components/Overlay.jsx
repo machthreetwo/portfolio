@@ -4,6 +4,16 @@ import { onStory, scrollToId } from '../store'
 import { fade } from '../lib/timeline'
 import { PANELS, typedCount, wordIndexAt } from '../three/story'
 
+// Stage names for the HUD, keyed by where each one starts.
+const STAGES = [
+  [0, 'Standby'],
+  [0.14, 'Input'],
+  [0.4, 'Teardown'],
+  [0.57, 'Toolkit'],
+  [0.93, 'Cruise'],
+]
+const pad = (n) => String(n).padStart(2, '0')
+
 // Fixed text panels over the canvas. Opacity is driven imperatively from the
 // same damped progress the 3D scene uses, so text and motion stay locked.
 export default function Overlay() {
@@ -12,6 +22,8 @@ export default function Overlay() {
   const wordNum = useRef()
   const wordNote = useRef()
   const bar = useRef()
+  const mach = useRef()
+  const stage = useRef()
 
   useEffect(() => {
     let last = -1
@@ -27,40 +39,63 @@ export default function Overlay() {
       }
       typed.current.textContent = content.typing.slice(0, typedCount(p))
       const wi = wordIndexAt(p)
-      wordNum.current.textContent = `${String(wi + 1).padStart(2, '0')} / ${String(content.skills.length).padStart(2, '0')}`
+      wordNum.current.textContent = `${pad(wi + 1)} / ${pad(content.skills.length)}`
       wordNote.current.textContent = content.skills[wi].note
       bar.current.style.transform = `scaleX(${Math.min(1, p)})`
+      mach.current.textContent = (Math.min(1, p) * 3.2).toFixed(2)
+      stage.current.textContent = STAGES.findLast(([t]) => p >= t)[1]
     })
   }, [])
 
   const panel = (id) => ({ ref: (el) => (panels.current[id] = el), className: `panel panel-${id}` })
+  const [first, ...rest] = content.name.split(' ')
 
   return (
     <div className="overlay">
       <div className="progress" ref={bar} />
 
+      <div className="hud" aria-hidden="true">
+        <span className="hud-label">Mach</span>
+        <span className="hud-value" ref={mach}>
+          0.00
+        </span>
+        <span className="hud-stage" ref={stage}>
+          Standby
+        </span>
+      </div>
+
       <section {...panel('hero')}>
-        <p className="eyebrow">{content.role}</p>
-        <h1>{content.name}</h1>
+        <p className="status">
+          <span className="dot" />
+          {content.status}
+        </p>
+        <h1>
+          {first}
+          <br />
+          <span className="outline">{rest.join(' ')}</span>
+        </h1>
         <p className="lede">{content.tagline}</p>
-        <p className="hint">Scroll to explore</p>
+        <p className="eyebrow muted">{content.role}</p>
       </section>
 
       <section {...panel('typing')}>
         <div className="terminal">
-          <span className="prompt">~ $</span>
+          <span className="prompt">{content.handle} ~ $</span>
           <span ref={typed} />
           <span className="caret" />
         </div>
       </section>
 
       <section {...panel('explode')}>
-        <p className="eyebrow">What I'm made of</p>
+        <p className="eyebrow">Anatomy of the stack</p>
         <ol className="layers">
-          {content.layers.map((l) => (
+          {content.layers.map((l, i) => (
             <li key={l.title}>
-              <h3>{l.title}</h3>
-              <p>{l.text}</p>
+              <span className="layer-num">{pad(i + 1)}</span>
+              <div>
+                <h3>{l.title}</h3>
+                <p>{l.text}</p>
+              </div>
             </li>
           ))}
         </ol>
@@ -74,7 +109,11 @@ export default function Overlay() {
       </section>
 
       <section {...panel('final')}>
-        <h2>Let's build something great.</h2>
+        <h2>
+          Built for speed.
+          <br />
+          <span className="outline">Shipped for real.</span>
+        </h2>
         <div className="actions">
           <button className="btn primary" onClick={() => scrollToId('work')}>
             See my work

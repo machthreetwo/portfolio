@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { ContactShadows, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import font from '@fontsource/inter/files/inter-latin-600-normal.woff?url'
+import font from '@fontsource/martian-mono/files/martian-mono-latin-500-normal.woff?url'
 import { story } from '../store'
 import { clamp01, easeInOutCubic, lerp, segment } from '../lib/timeline'
 import { CAP_H, GAP, HOME_Y, KEYS } from './layout'
@@ -115,12 +115,12 @@ function Keycap({ k }) {
         />
       </mesh>
       {k.label && (
-        <Text ref={base} {...legend} fontSize={k.label.length > 1 ? 0.14 : 0.3}>
+        <Text ref={base} {...legend} fontSize={k.label.length > 1 ? 0.12 : 0.27}>
           {k.label}
         </Text>
       )}
       {altLetters.map((ch) => (
-        <Text key={ch} ref={(el) => (alts.current[ch] = el)} {...legend} fontSize={0.3} visible={false}>
+        <Text key={ch} ref={(el) => (alts.current[ch] = el)} {...legend} fontSize={0.27} visible={false}>
           {ch}
         </Text>
       ))}

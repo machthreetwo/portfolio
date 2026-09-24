@@ -5,7 +5,7 @@ import Lenis from 'lenis'
 import { content } from './content'
 import { pointer, scroller, scrollToId, story, tickStory } from './store'
 import Overlay from './components/Overlay'
-import { Contact, Work } from './components/Sections'
+import { Awards, Contact, Work } from './components/Sections'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -65,7 +65,8 @@ export default function App() {
       <Overlay />
       <nav className="nav">
         <button className="brand" onClick={() => (scroller.lenis ? scroller.lenis.scrollTo(0) : window.scrollTo(0, 0))}>
-          {content.name}
+          <span className="monogram">AK</span>
+          <span className="handle">{content.handle}</span>
         </button>
         <div>
           <button onClick={() => scrollToId('work')}>Work</button>
@@ -75,6 +76,7 @@ export default function App() {
       <main>
         <div id="story" aria-hidden="true" />
         <Work />
+        <Awards />
         <Contact />
       </main>
     </>
