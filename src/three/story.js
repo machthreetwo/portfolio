@@ -2,7 +2,7 @@
 import { content } from '../content'
 
 export const TYPE_SPAN = [0.17, 0.34]
-export const WORD_SPAN = [0.6, 0.87]
+export const WORD_SPAN = [0.6, 0.9]
 
 const nWords = content.skills.length
 const wordLen = (WORD_SPAN[1] - WORD_SPAN[0]) / nWords
@@ -15,18 +15,18 @@ export const FRAMES = [
   { t: 0.53, s: 'exploded' },
   ...content.skills.flatMap((_, i) => [
     { t: WORD_SPAN[0] + i * wordLen, s: `w${i}` },
-    { t: WORD_SPAN[0] + (i + 1) * wordLen - 0.03, s: `w${i}` },
+    { t: WORD_SPAN[0] + (i + 1) * wordLen - 0.022, s: `w${i}` },
   ]),
-  { t: 0.94, s: 'home' },
+  { t: 0.96, s: 'home' },
   { t: 1, s: 'home' },
 ]
 
 const cam = (pos, look) => ({ pos, look })
-const HERO = cam([8.5, 6.5, 10.5], [0, 0, 0])
+const HERO = cam([7, 9, 15], [-4.2, -0.6, 0.8])
 const TOP = cam([0, 16, 4], [0, 0, 0.3])
-const SIDE = cam([12, 7.5, 12], [0, 1.6, 0])
+const SIDE = cam([12, 9, 15], [-3.2, 1.2, 0])
 const FRONT = cam([0, 3, 17], [0, 3, 0])
-const END = cam([0, 8.5, 12.5], [0, 0, 0])
+const END = cam([0, 11, 19], [0, 2.2, -1])
 
 export const CAMERA = [
   { t: 0, s: HERO },
@@ -36,8 +36,8 @@ export const CAMERA = [
   { t: 0.43, s: SIDE },
   { t: 0.54, s: SIDE },
   { t: 0.61, s: FRONT },
-  { t: 0.87, s: FRONT },
-  { t: 0.94, s: END },
+  { t: 0.9, s: FRONT },
+  { t: 0.96, s: END },
   { t: 1, s: END },
 ]
 
@@ -46,8 +46,8 @@ export const PANELS = {
   hero: [-1, -1, 0.06, 0.11],
   typing: [0.14, 0.17, 0.34, 0.37],
   explode: [0.41, 0.44, 0.53, 0.56],
-  words: [0.57, 0.6, 0.85, 0.88],
-  final: [0.92, 0.96, 2, 2],
+  words: [0.57, 0.6, 0.88, 0.91],
+  final: [0.95, 0.98, 2, 2],
 }
 
 export const wordIndexAt = (p) =>

@@ -8,11 +8,12 @@ import Keyboard from './Keyboard'
 import { CAMERA } from './story'
 
 const BG = '#0b0b0d'
+const FOG = [24, 48]
 
 function CameraRig() {
   const parallax = useRef({ x: 0, y: 0 })
 
-  useFrame(({ camera, size }, dt) => {
+  useFrame(({ camera, size, scene }, dt) => {
     const { a, b, f } = segment(CAMERA, story.current)
     const e = easeInOutCubic(f)
     const par = parallax.current
@@ -21,7 +22,9 @@ function CameraRig() {
     par.y += (pointer.y - par.y) * k
 
     // Pull back on narrow screens so the 15-unit-wide board still fits.
-    const zoom = THREE.MathUtils.clamp(1.5 / (size.width / size.height), 1, 2.8)
+    const zoom = THREE.MathUtils.clamp(1.5 / (size.width / size.height), 1, 3.2)
+    scene.fog.near = FOG[0] * zoom
+    scene.fog.far = FOG[1] * zoom
     const look = [0, 1, 2].map((i) => lerp(a.look[i], b.look[i], e))
     const pos = [0, 1, 2].map((i) => look[i] + (lerp(a.pos[i], b.pos[i], e) - look[i]) * zoom)
 
@@ -36,7 +39,7 @@ export default function Scene() {
   return (
     <Canvas dpr={[1, 2]} camera={{ fov: 35, position: [8.5, 6.5, 10.5], near: 0.1, far: 120 }}>
       <color attach="background" args={[BG]} />
-      <fog attach="fog" args={[BG, 24, 48]} />
+      <fog attach="fog" args={[BG, ...FOG]} />
       <ambientLight intensity={0.15} />
       <directionalLight position={[-6, 10, 6]} intensity={1.1} />
       <Suspense fallback={null}>

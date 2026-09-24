@@ -40,7 +40,14 @@ export const KEYS = []
 ROWS.forEach((row, r) => {
   let x = -7.5
   for (const def of row) {
-    KEYS.push({ ...def, i: KEYS.length, x: x + def.w / 2, z: r - 2, words: [], presses: [] })
+    KEYS.push({
+      ...def,
+      i: KEYS.length,
+      x: x + def.w / 2,
+      z: r - 2,
+      words: content.skills.map(() => null),
+      presses: [],
+    })
     x += def.w
   }
 })
@@ -71,10 +78,10 @@ content.skills.forEach(({ word }, wi) => {
 // Keys not in the current word drift in a cloud behind it.
 for (const k of KEYS) {
   const r = seeded(k.i + 1)
-  const x = (r() * 2 - 1) * 11
-  const y = -1.5 + r() * 9.5
-  const nearWord = Math.abs(x) < 6.5 && y > 1.2 && y < 4.8
-  const z = nearWord ? -7 - r() * 4 : -3 - r() * 6
+  const x = (r() * 2 - 1) * 16
+  const y = -3 + r() * 13
+  const nearWord = Math.abs(x) < 7 && y > 0.8 && y < 5.2
+  const z = nearWord ? -14 - r() * 6 : -7 - r() * 10
   k.cloud = [x, y, z, r() * Math.PI * 2, r() * Math.PI * 2, r() * Math.PI * 2]
   k.jitter = [r() - 0.5, r() - 0.5, r() - 0.5, r() - 0.5]
 }

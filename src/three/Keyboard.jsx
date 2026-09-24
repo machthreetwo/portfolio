@@ -10,7 +10,7 @@ import { CAP_H, GAP, HOME_Y, KEYS } from './layout'
 import { FRAMES, PRESS_WIDTH } from './story'
 
 const TAU = Math.PI * 2
-const MAX_DELAY = 0.35 // left→right cascade when keys change formation
+const MAX_DELAY = 0.25 // left→right cascade when keys change formation
 
 const PALETTE = {
   alpha: { cap: '#e9e6df', legend: '#26272b' },
@@ -51,6 +51,9 @@ function buildPoses(k) {
 
 const isWord = (s) => s[0] === 'w'
 
+// Scratch pose shared by all keycaps; each useFrame fully overwrites it.
+const v = new Array(7).fill(0)
+
 function Keycap({ k }) {
   const group = useRef()
   const material = useRef()
@@ -58,7 +61,6 @@ function Keycap({ k }) {
   const alts = useRef({})
   const poses = useMemo(() => buildPoses(k), [k])
   const altLetters = useMemo(() => [...new Set(k.words.map((s) => s?.alt).filter(Boolean))], [k])
-  const v = useMemo(() => new Array(7).fill(0), [])
   const delay = ((k.x + 7.5) / 15) * MAX_DELAY
   const colors = PALETTE[k.kind]
 
@@ -155,7 +157,7 @@ function Switches() {
 }
 
 // Y offsets for [case, plate, switches] in each body state.
-const BODY = { home: [0, 0, 0], exploded: [-1.8, 0.45, 1.6], sink: [-12, -12, -12] }
+const BODY = { home: [0, 0, 0], exploded: [-1.8, 0.45, 1.6], sink: [-40, -40, -40] }
 const bodyState = (s) => (isWord(s) ? 'sink' : s)
 
 function Body() {

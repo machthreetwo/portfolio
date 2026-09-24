@@ -31,6 +31,13 @@ export default function App() {
       onUpdate: (self) => (story.target = self.progress),
     })
 
+    // Debug: ?p=0.5 jumps the story to that point (handy for screenshots).
+    const debugP = parseFloat(new URLSearchParams(window.location.search).get('p'))
+    if (!Number.isNaN(debugP)) {
+      trigger.disable()
+      story.target = story.current = debugP
+    }
+
     const onMove = (e) => {
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
