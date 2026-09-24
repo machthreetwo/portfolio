@@ -1,16 +1,32 @@
-# React + Vite
+# Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A scroll-driven 3D portfolio: a mechanical keyboard that types an intro, explodes into its layers, and rearranges its keycaps to spell out skills.
 
-Currently, two official plugins are available:
+Built with Vite, React, React Three Fiber, drei, GSAP ScrollTrigger and Lenis.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Develop
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Make it yours
 
-## Expanding the Oxlint configuration
+Edit **`src/content.js`**: name, tagline, typing text, layer descriptions, skill words, projects and contact links. Everything else reads from it.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Skill words are spelled by keycaps. Repeated letters borrow spare number/symbol keys automatically. Keep words to 9 characters or fewer.
+- The typing text can use letters, digits, spaces and `- = [ ] \ ; ' , . /`.
+
+## How it works
+
+| File | Purpose |
+|---|---|
+| `src/three/story.js` | Scroll storyboard: keyframe timings, camera shots, overlay panel ranges |
+| `src/three/layout.js` | Generates the 60% keyboard, word slots, cloud positions and typing schedule |
+| `src/three/Keyboard.jsx` | Keycaps, switches, plate and case, animated every frame from scroll progress |
+| `src/three/Scene.jsx` | Canvas, procedural studio lighting, camera rig |
+| `src/components/Overlay.jsx` | Fixed HTML text synced to the same progress value |
+| `src/store.js` | Damped scroll progress shared by the 3D scene and the overlay |
+
+Tip: append `?p=0.5` to the URL to freeze the story at that point, which is useful when tweaking a shot.

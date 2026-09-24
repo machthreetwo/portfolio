@@ -1,14 +1,16 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { content } from './content'
 import { pointer, scroller, scrollToId, story, tickStory } from './store'
-import Scene from './three/Scene'
 import Overlay from './components/Overlay'
 import { Contact, Work } from './components/Sections'
 
 gsap.registerPlugin(ScrollTrigger)
+
+// Three.js is the bulk of the bundle — load it after the page text paints.
+const Scene = lazy(() => import('./three/Scene'))
 
 export default function App() {
   useEffect(() => {
@@ -56,7 +58,9 @@ export default function App() {
   return (
     <>
       <div className="canvas-wrap">
-        <Scene />
+        <Suspense fallback={null}>
+          <Scene />
+        </Suspense>
       </div>
       <Overlay />
       <nav className="nav">
