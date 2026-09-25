@@ -1,12 +1,12 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { ContactShadows, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import font from '@fontsource/martian-mono/files/martian-mono-latin-500-normal.woff?url'
-import { story } from '../store'
+import { emitType, markSceneReady, story, view } from '../store'
 import { clamp01, easeInOutCubic, lerp, segment } from '../lib/timeline'
-import { CAP_H, GAP, HOME_Y, KEYS } from './layout'
+import { CAP_H, GAP, HOME_Y, KEY_BY_CODE, KEYS, held, pressed } from './layout'
 import { FRAMES, PRESS_WIDTH } from './story'
 
 const TAU = Math.PI * 2
@@ -45,6 +45,7 @@ function buildPoses(k) {
   }
   k.words.forEach((slot, wi) => {
     poses[`w${wi}`] = slot ? [...slot.pos, Math.PI / 2, 0, 0, 0] : [...k.cloud, 1]
+    poses[`w${wi}p`] = slot ? [...slot.posPortrait, Math.PI / 2, 0, 0, 0] : [...k.cloud, 1]
   })
   return poses
 }
@@ -64,12 +65,12 @@ function Keycap({ k }) {
   const delay = ((k.x + 7.5) / 15) * MAX_DELAY
   const colors = PALETTE[k.kind]
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, dt) => {
     const p = story.current
     const { a, b, f } = segment(FRAMES, p)
     const e = a === b ? 0 : easeInOutCubic(clamp01((f - delay) / (1 - MAX_DELAY)))
-    const A = poses[a]
-    const B = poses[b]
+    const A = poses[view.portrait && isWord(a) ? `${a}p` : a]
+    const B = poses[view.portrait && isWord(b) ? `${b}p` : b]
     for (let j = 0; j < 7; j++) v[j] = lerp(A[j], B[j], e)
 
     // Flip once while flying into / between words — this hides the legend swap.
@@ -80,6 +81,8 @@ function Keycap({ k }) {
 
     let press = 0
     for (const t of k.presses) press = Math.max(press, 1 - Math.abs(p - t) / PRESS_WIDTH)
+    pressed[k.i] += (held[k.i] - pressed[k.i]) * (1 - Math.exp(-dt * 28))
+    press = Math.max(press, pressed[k.i])
     v[1] -= 0.14 * press
 
     group.current.position.set(v[0], v[1], v[2])
@@ -103,7 +106,20 @@ function Keycap({ k }) {
 
   return (
     <group ref={group}>
-      <mesh geometry={capGeometry(k.w)}>
+      <mesh
+        geometry={capGeometry(k.w)}
+        onPointerOver={(e) => {
+          e.stopPropagation()
+          held[k.i] = 1
+          document.body.style.cursor = 'pointer'
+        }}
+        onPointerOut={() => {
+          held[k.i] = 0
+          document.body.style.cursor = ''
+        }}
+        onPointerUp={() => (held[k.i] = 0)}
+        onPointerDown={() => (held[k.i] = 1)}
+      >
         <meshPhysicalMaterial
           ref={material}
           color={colors.cap}
@@ -195,8 +211,39 @@ function Body() {
   )
 }
 
+// Physical keyboard drives the 3D one. Space is swallowed only on the hero so
+// it can still scroll the page everywhere else.
+function useKeyInput() {
+  useEffect(() => {
+    const down = (e) => {
+      const k = KEY_BY_CODE[e.code]
+      if (!k || e.target.closest?.('input, textarea')) return
+      if (e.code === 'Space' && story.current < 0.1) e.preventDefault()
+      held[k.i] = 1
+      if (!e.repeat && e.key.length === 1) emitType(e.key)
+      if (!e.repeat && e.code === 'Backspace') emitType('\b')
+    }
+    const up = (e) => {
+      const k = KEY_BY_CODE[e.code]
+      if (k) held[k.i] = 0
+    }
+    const release = () => held.fill(0)
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    window.addEventListener('blur', release)
+    return () => {
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', release)
+    }
+  }, [])
+}
+
 export default function Keyboard() {
   const root = useRef()
+  useKeyInput()
+  // Suspense has resolved (font loaded) — let the loader know after a frame.
+  useEffect(() => void requestAnimationFrame(() => markSceneReady()), [])
 
   useFrame(({ clock }) => {
     const heroWeight = 1 - clamp01(story.current / 0.1)

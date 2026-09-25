@@ -5,7 +5,8 @@ import Lenis from 'lenis'
 import { content } from './content'
 import { pointer, scroller, scrollToId, story, tickStory } from './store'
 import Overlay from './components/Overlay'
-import { Awards, Contact, Work } from './components/Sections'
+import Loader from './components/Loader'
+import { Awards, Contact, Stack, Work } from './components/Sections'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -18,6 +19,8 @@ export default function App() {
     const lenis = reduceMotion ? null : new Lenis({ lerp: 0.1 })
     scroller.lenis = lenis
     lenis?.on('scroll', ScrollTrigger.update)
+    // The loader (a child, so its effect ran first) holds scrolling until it's done.
+    if (document.documentElement.classList.contains('is-loading')) lenis?.stop()
 
     const tick = (time, deltaMs) => {
       lenis?.raf(time * 1000)
@@ -63,6 +66,7 @@ export default function App() {
         </Suspense>
       </div>
       <Overlay />
+      <Loader />
       <nav className="nav">
         <button className="brand" onClick={() => (scroller.lenis ? scroller.lenis.scrollTo(0) : window.scrollTo(0, 0))}>
           <span className="monogram">AK</span>
@@ -76,6 +80,7 @@ export default function App() {
       <main>
         <div id="story" aria-hidden="true" />
         <Work />
+        <Stack />
         <Awards />
         <Contact />
       </main>

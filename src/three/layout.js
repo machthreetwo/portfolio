@@ -71,7 +71,9 @@ content.skills.forEach(({ word }, wi) => {
     }
     if (!k) return
     used.add(k.i)
-    k.words[wi] = { pos: [(ci - (chars.length - 1) / 2) * SLOT, WORD_Y, 0], alt }
+    const offset = (chars.length - 1) / 2 - ci
+    // Landscape spells left→right; portrait stacks the letters top→bottom.
+    k.words[wi] = { pos: [-offset * SLOT, WORD_Y, 0], posPortrait: [0, WORD_Y + offset * SLOT, 0], alt }
   })
 })
 
@@ -91,3 +93,19 @@ for (const k of KEYS) {
   const k = KEYS.find((k) => k.ch === ch.toLowerCase())
   if (k) k.presses.push(pressTime(i))
 })
+
+// Physical keyboard → 3D key, by KeyboardEvent.code (layout-independent).
+const letters = (s) => [...s].map((c) => `Key${c.toUpperCase()}`)
+const CODES = [
+  'Escape', ...[...'1234567890'].map((d) => `Digit${d}`), 'Minus', 'Equal', 'Backspace',
+  'Tab', ...letters('qwertyuiop'), 'BracketLeft', 'BracketRight', 'Backslash',
+  'CapsLock', ...letters('asdfghjkl'), 'Semicolon', 'Quote', 'Enter',
+  'ShiftLeft', ...letters('zxcvbnm'), 'Comma', 'Period', 'Slash', 'ShiftRight',
+  'ControlLeft', 'AltLeft', 'MetaLeft', 'Space', 'MetaRight', 'AltRight', 'Fn', 'ControlRight',
+]
+// Live input per key index: `held` is 1 while a physical key or pointer holds it
+// down; `pressed` is its smoothed value used for animation.
+export const held = new Float32Array(KEYS.length)
+export const pressed = new Float32Array(KEYS.length)
+
+export const KEY_BY_CODE = Object.fromEntries(CODES.map((code, i) => [code, KEYS[i]]))

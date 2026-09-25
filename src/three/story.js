@@ -21,12 +21,15 @@ export const FRAMES = [
   { t: 1, s: 'home' },
 ]
 
-const cam = (pos, look) => ({ pos, look })
-const HERO = cam([7, 9, 15], [-4.2, -0.6, 0.8])
-const TOP = cam([0, 16, 4], [0, 0, 0.3])
-const SIDE = cam([12, 9, 15], [-3.2, 1.2, 0])
-const FRONT = cam([0, 3, 17], [0, 3, 0])
-const END = cam([0, 11, 19], [0, 2.2, -1])
+// Each shot: camera position, look-at target, and the world-space width/height
+// that must stay in frame (the rig pulls back until it fits). `portrait` is
+// the variant used on tall screens, where text sits above/below the model.
+const cam = (pos, look, fitW = 0, fitH = 0, portrait) => ({ pos, look, fitW, fitH, portrait })
+const HERO = cam([7, 9, 15], [-4.2, -0.6, 0.8], 0, 0, cam([5, 12, 13], [0, -3.4, 0.6], 18.5))
+const TOP = cam([0, 16, 4], [0, 0, 0.3], 16.4, 0, cam([0, 16, 4], [0, 0, 0.3], 16.4))
+const SIDE = cam([12, 9, 15], [-3.6, 1.2, 0], 26, 0, cam([11, 10, 14], [0, -1.6, 0], 19))
+const FRONT = cam([0, 3, 17], [0, 3, 0], 12.4, 0, cam([0, 3, 17], [0, 4.2, 0], 3.2, 16))
+const END = cam([0, 11, 19], [0, 2.2, -1], 17, 0, cam([0, 11, 19], [0, 3.8, -1], 16.8))
 
 export const CAMERA = [
   { t: 0, s: HERO },

@@ -27,3 +27,25 @@ export function scrollToId(id) {
   if (scroller.lenis) scroller.lenis.scrollTo(el)
   else el.scrollIntoView({ behavior: 'smooth' })
 }
+
+// Layout mode shared with the 3D scene (portrait stacks words vertically, etc).
+export const view = { portrait: false }
+
+// Fires once the 3D scene has its assets and has rendered.
+const readyListeners = new Set()
+export const sceneState = { ready: false }
+export function onSceneReady(fn) {
+  if (sceneState.ready) fn()
+  else readyListeners.add(fn)
+  return () => readyListeners.delete(fn)
+}
+export function markSceneReady() {
+  if (sceneState.ready) return
+  sceneState.ready = true
+  readyListeners.forEach((fn) => fn())
+}
+
+// Characters typed on the physical keyboard, for the hero echo.
+const typeListeners = new Set()
+export const onType = (fn) => (typeListeners.add(fn), () => typeListeners.delete(fn))
+export const emitType = (ch) => typeListeners.forEach((fn) => fn(ch))

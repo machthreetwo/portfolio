@@ -2,7 +2,7 @@ import { Suspense, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, Lightformer } from '@react-three/drei'
 import * as THREE from 'three'
-import { pointer, story } from '../store'
+import { pointer, story, view } from '../store'
 import { easeInOutCubic, lerp, segment } from '../lib/timeline'
 import Keyboard from './Keyboard'
 import { CAMERA } from './story'
@@ -10,25 +10,42 @@ import { CAMERA } from './story'
 const BG = '#0b0b0d'
 const FOG = [24, 48]
 
+const pick = (shot) => (view.portrait && shot.portrait ? shot.portrait : shot)
+const HALF_FOV = Math.tan(THREE.MathUtils.degToRad(35 / 2))
+
 function CameraRig() {
   const parallax = useRef({ x: 0, y: 0 })
 
   useFrame(({ camera, size, scene }, dt) => {
+    const aspect = size.width / size.height
+    view.portrait = aspect < 0.95
+
     const { a, b, f } = segment(CAMERA, story.current)
     const e = easeInOutCubic(f)
+    const A = pick(a)
+    const B = pick(b)
     const par = parallax.current
     const k = 1 - Math.exp(-dt * 3)
     par.x += (pointer.x - par.x) * k
     par.y += (pointer.y - par.y) * k
 
-    // Pull back on narrow screens so the 15-unit-wide board still fits.
-    const zoom = THREE.MathUtils.clamp(1.5 / (size.width / size.height), 1, 3.2)
+    const look = [0, 1, 2].map((i) => lerp(A.look[i], B.look[i], e))
+    const offset = [0, 1, 2].map((i) => lerp(A.pos[i], B.pos[i], e) - look[i])
+    const dist = Math.hypot(...offset)
+
+    // Pull back until the shot's required width/height is visible.
+    const visH = 2 * dist * HALF_FOV
+    const fitW = lerp(A.fitW, B.fitW, e)
+    const fitH = lerp(A.fitH, B.fitH, e)
+    const zoom = Math.max(1, fitW / (visH * aspect), fitH / visH)
     scene.fog.near = FOG[0] * zoom
     scene.fog.far = FOG[1] * zoom
-    const look = [0, 1, 2].map((i) => lerp(a.look[i], b.look[i], e))
-    const pos = [0, 1, 2].map((i) => look[i] + (lerp(a.pos[i], b.pos[i], e) - look[i]) * zoom)
 
-    camera.position.set(pos[0] + par.x * 0.8, pos[1] + par.y * 0.5, pos[2])
+    camera.position.set(
+      look[0] + offset[0] * zoom + par.x * 0.8,
+      look[1] + offset[1] * zoom + par.y * 0.5,
+      look[2] + offset[2] * zoom,
+    )
     camera.lookAt(look[0], look[1], look[2])
   })
 
@@ -37,7 +54,13 @@ function CameraRig() {
 
 export default function Scene() {
   return (
-    <Canvas dpr={[1, 2]} camera={{ fov: 35, position: [8.5, 6.5, 10.5], near: 0.1, far: 120 }}>
+    <Canvas
+      dpr={[1, 1.75]}
+      camera={{ fov: 35, position: [8.5, 6.5, 10.5], near: 0.1, far: 200 }}
+      // Events come from #root so keys stay hoverable under the HTML overlay.
+      eventSource={document.getElementById('root')}
+      eventPrefix="client"
+    >
       <color attach="background" args={[BG]} />
       <fog attach="fog" args={[BG, ...FOG]} />
       <ambientLight intensity={0.15} />

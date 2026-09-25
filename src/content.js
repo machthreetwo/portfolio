@@ -79,6 +79,9 @@ export const content = {
     },
   ],
 
+  // Scrolling ticker between the work and hackathon sections.
+  stack: ['Python', 'PyTorch', 'LangChain', 'LangGraph', 'FAISS', 'FastAPI', 'Kafka', 'Redis', 'Docker', 'React', 'Next.js', 'Flutter'],
+
   awards: [
     { place: '2nd', title: 'Gen AI Hackathon', where: 'Team AetherFlux' },
     { place: 'Top 10', title: 'GenAI Hackathon', where: 'IIT Ropar × Pathway · Team AlienX' },
